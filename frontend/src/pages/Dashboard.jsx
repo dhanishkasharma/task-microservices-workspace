@@ -30,13 +30,11 @@ export default function Dashboard() {
     });
   }, [profile._id]);
 
-  // ... (getMonthlyTaskCount, monthsData, and Calendar helpers remain exactly the same)
-
+  // Helper logic for Charts and Calendar
   const getMonthlyTaskCount = (monthIndex) => {
     return tasks.filter(task => {
       if (!task.createdAt) return false;
-      const taskMonth = new Date(task.createdAt).getMonth();
-      return taskMonth === monthIndex;
+      return new Date(task.createdAt).getMonth() === monthIndex;
     }).length;
   };
 
@@ -55,16 +53,14 @@ export default function Dashboard() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const getTasksForDate = (dayNum) => {
-    const formattedDay = dayNum < 10 ? `0${dayNum}` : dayNum;
-    const formattedMonth = (currentDate.getMonth() + 1) < 10 ? `0${currentDate.getMonth() + 1}` : currentDate.getMonth() + 1;
-    const targetString = `${currentDate.getFullYear()}-${formattedMonth}-${formattedDay}`;
-    return tasks.filter(t => t.dueDate === targetString);
+    const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNum);
+    const dateString = d.toISOString().split('T')[0];
+    return tasks.filter(t => t.dueDate === dateString);
   };
 
-  // ... (Return JSX remains the same as your original)
   return (
     <div className="p-6 lg:p-10 min-h-screen bg-[#fff7fb] space-y-8">
-      {/* (Rest of your original JSX code here) */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-pink-400 to-rose-400 p-8 rounded-3xl text-white shadow-xl">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Welcome Back, {profile.name}!</h1>
@@ -99,7 +95,55 @@ export default function Dashboard() {
           <div className="p-4 rounded-2xl bg-amber-50 text-amber-500"><Bell size={26} /></div>
         </div>
       </div>
-      {/* (Charts/Calendar Grid section omitted for brevity, it works with the updated data above!) */}
+
+      {/* GRAPHICAL ANALYSIS AND CALENDAR SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Task Analysis Chart */}
+        <div className="bg-white p-8 rounded-3xl border border-pink-100 shadow-xs">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <BarChart3 className="text-pink-500" /> Task Activity
+          </h2>
+          <div className="flex items-end gap-2 h-48 mt-4 border-b border-gray-100">
+            {monthsData.map((m, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                <motion.div 
+                  initial={{ height: 0 }}
+                  animate={{ height: `${(m.done / maxLoadVal) * 100}%` }}
+                  className="w-full bg-pink-400 rounded-t-md hover:bg-pink-600 transition-colors"
+                />
+                <span className="text-[10px] font-bold text-gray-400 uppercase">{m.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Calendar Widget */}
+        <div className="bg-white p-8 rounded-3xl border border-pink-100 shadow-xs">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <CalendarIcon className="text-pink-500" /> {monthNames[currentDate.getMonth()]}
+            </h2>
+            <div className="flex gap-1">
+              <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} className="p-2 hover:bg-gray-100 rounded-full"><ChevronLeft size={16}/></button>
+              <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-2 hover:bg-gray-100 rounded-full"><ChevronRight size={16}/></button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {["S","M","T","W","T","F","S"].map(d => <div key={d} className="text-center text-[10px] font-bold text-gray-300">{d}</div>)}
+            {[...Array(firstDayIndex).keys()].map(i => <div key={`empty-${i}`} />)}
+            {[...Array(daysInMonth).keys()].map(i => {
+              const day = i + 1;
+              const hasTasks = getTasksForDate(day).length > 0;
+              return (
+                <div key={i} className={`relative text-center py-2 text-sm rounded-xl ${hasTasks ? 'bg-pink-50 font-bold text-pink-600' : 'text-gray-600'}`}>
+                  {day}
+                  {hasTasks && <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-pink-500 rounded-full" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
