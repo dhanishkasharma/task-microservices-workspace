@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, ArrowRight, User, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// REPLACE this URL with your actual User Service Render URL
+const USER_SERVICE_URL = "https://user-service-90a5.onrender.com";
+
 export default function Login() {
   const navigate = useNavigate();
   
@@ -24,15 +27,14 @@ export default function Login() {
     const targetEmail = email.trim().toLowerCase();
 
     if (mode === "signup") {
-      // 1. Instant validation: check local cache array first
       const userExists = registeredUsers.some(u => u.email.toLowerCase() === targetEmail);
       if (userExists) {
         setError("An account with this email already exists!");
         return;
       }
 
-      // 2. HTTP POST dispatch to your live User Service backend
-      fetch("http://localhost:3001/users", {
+      // HTTP POST dispatch to your live User Service backend
+      fetch(`${USER_SERVICE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: targetEmail })
@@ -46,29 +48,24 @@ export default function Login() {
           return res.json();
         })
         .then((savedUser) => {
-          // 3. Complete system profile using the real database _id
           const newAccount = {
-            _id: savedUser._id, // Real permanent MongoDB ID mapping
+            _id: savedUser._id,
             name: savedUser.name,
             email: savedUser.email,
-            password: password // Safe local state check tracking string
+            password: password
           };
 
-          // Cache credentials inside local account vault
           registeredUsers.push(newAccount);
           localStorage.setItem("localAccounts", JSON.stringify(registeredUsers));
-
-          // Set active browser login context context session
           localStorage.setItem("currentUser", JSON.stringify({ _id: newAccount._id, name: newAccount.name, email: newAccount.email }));
           navigate("/dashboard");
         })
         .catch((err) => {
           console.error("User Service endpoint failure:", err);
-          setError(err.message || "Failed to reach User Service backend. Verify your Docker container is online.");
+          setError(err.message || "Failed to reach User Service backend.");
         });
 
     } else {
-      // Mode is 'login' -> Match local credentials
       const matchedUser = registeredUsers.find(u => u.email.toLowerCase() === targetEmail);
       
       if (!matchedUser) {
@@ -81,7 +78,6 @@ export default function Login() {
         return;
       }
 
-      // Save valid active profile context session state
       localStorage.setItem("currentUser", JSON.stringify({ _id: matchedUser._id, name: matchedUser.name, email: matchedUser.email }));
       navigate("/dashboard");
     }
@@ -98,8 +94,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200 overflow-hidden relative">
-      
-      {/* Background Glow Ring Elements */}
       <div className="absolute top-[-120px] left-[-100px] w-[300px] h-[300px] bg-pink-300 rounded-full blur-3xl opacity-30" />
       <div className="absolute bottom-[-120px] right-[-100px] w-[300px] h-[300px] bg-rose-300 rounded-full blur-3xl opacity-30" />
 
@@ -110,20 +104,15 @@ export default function Login() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-[90%] max-w-md backdrop-blur-xl bg-white/60 border border-white/40 shadow-2xl rounded-3xl p-8 z-10"
       >
-        
-        {/* Header Text */}
         <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-gray-800 transition-all">
             {mode === "login" ? "Welcome Back" : "Create Account"}
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            {mode === "login" 
-              ? "Login to manage your tasks beautifully" 
-              : "Join the workspace pipeline in seconds"}
+            {mode === "login" ? "Login to manage your tasks beautifully" : "Join the workspace pipeline in seconds"}
           </p>
         </div>
 
-        {/* Dynamic Error Banner Notification */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -137,10 +126,7 @@ export default function Login() {
           )}
         </AnimatePresence>
 
-        {/* Input Interface Processing Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Dynamic Field: Full Name */}
           <AnimatePresence mode="wait">
             {mode === "signup" && (
               <motion.div
@@ -165,7 +151,6 @@ export default function Login() {
             )}
           </AnimatePresence>
 
-          {/* Email Element */}
           <div>
             <label className="text-sm text-gray-600 font-medium">Email</label>
             <div className="mt-1.5 flex items-center bg-white rounded-xl px-4 border border-pink-100 focus-within:border-pink-400 transition-all">
@@ -181,7 +166,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Password Element with Show/Hide Eye Toggle */}
           <div>
             <label className="text-sm text-gray-600 font-medium">Password</label>
             <div className="mt-1.5 flex items-center bg-white rounded-xl px-4 border border-pink-100 focus-within:border-pink-400 transition-all justify-between">
@@ -196,28 +180,16 @@ export default function Login() {
                   required
                 />
               </div>
-              
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-gray-400 hover:text-pink-500 focus:outline-none cursor-pointer transition-colors mr-1"
-                title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {/* Forgot Password Helper — only shows up during Login mode */}
-          {mode === "login" && (
-            <div className="flex justify-end pt-1">
-              <button type="button" className="text-xs text-pink-500 hover:text-pink-600 font-medium transition cursor-pointer">
-                Forgot Password?
-              </button>
-            </div>
-          )}
-
-          {/* Action Execution Submit Trigger Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -229,7 +201,6 @@ export default function Login() {
           </motion.button>
         </form>
 
-        {/* Footer Navigation Link Toggle Switches */}
         <p className="text-center text-gray-500 text-sm mt-6">
           {mode === "login" ? "Don’t have an account?" : "Already have an account?"}
           <button

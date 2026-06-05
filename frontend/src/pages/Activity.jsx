@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Clock, Terminal, Activity as ActivityIcon, Sun, Moon } from "lucide-react";
 
+// REPLACE this URL with your actual Notification Service Render URL
+const NOTIFICATION_SERVICE_URL = "https://notification-service-9qcx.onrender.com";
+
 export default function Activity() {
   const [notifications, setNotifications] = useState([]);
-  const [darkMode, setDarkMode] = useState(false); // New Dark Mode theme state toggle
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Fetch your custom logged-in profile from browser memory
   const storedUser = localStorage.getItem("currentUser");
   const profile = storedUser ? JSON.parse(storedUser) : { _id: "unassigned" };
 
   useEffect(() => {
     if (!profile._id) return;
 
-    fetch(`http://localhost:3003/notifications?userId=${profile._id}`)
+    // Updated fetch call to use the cloud URL
+    fetch(`${NOTIFICATION_SERVICE_URL}/notifications?userId=${profile._id}`)
       .then((res) => res.json())
       .then((data) => setNotifications(data))
       .catch((err) => console.error("Error fetching personalized logs:", err));
@@ -24,7 +27,6 @@ export default function Activity() {
       darkMode ? "bg-gray-950 text-gray-100" : "bg-[#fff7fb] text-gray-800"
     }`}>
       
-      {/* Header Controller Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 max-w-4xl">
         <div>
           <h2 className="text-3xl font-bold flex items-center gap-3">
@@ -35,7 +37,6 @@ export default function Activity() {
           </p>
         </div>
 
-        {/* Interactive Mode Toggle Button */}
         <button
           onClick={() => setDarkMode(!darkMode)}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border font-semibold text-xs transition-all shadow-xs cursor-pointer ${
@@ -56,7 +57,6 @@ export default function Activity() {
         </button>
       </div>
 
-      {/* Main Ledger Event List Wrapper */}
       <div className={`rounded-3xl border p-6 shadow-xs max-w-4xl transition-all ${
         darkMode ? "bg-gray-900 border-gray-850" : "bg-white border-pink-100"
       }`}>
