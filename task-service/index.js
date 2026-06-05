@@ -7,7 +7,14 @@ const app = express();
 const port = 3002;
 
 app.use(bodyParser.json());
-app.use(cors());
+
+
+// Replace the current app.use(cors()) with this:
+app.use(cors({
+  origin: '*', // Allows requests from any origin (e.g., your Vercel app)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://mongo:27017/tasks';
 mongoose.connect(mongoURI)

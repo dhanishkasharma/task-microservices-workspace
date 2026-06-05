@@ -8,7 +8,12 @@ const app = express();
 const port = 3003;
 
 app.use(bodyParser.json());
-app.use(cors()); 
+// Replace the current app.use(cors()) with this:
+app.use(cors({
+  origin: '*', // Allows requests from any origin (e.g., your Vercel app)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI || 'mongodb://mongo:27017/notifications';
