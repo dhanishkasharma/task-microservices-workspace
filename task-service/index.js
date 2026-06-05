@@ -9,7 +9,8 @@ const port = 3002;
 app.use(bodyParser.json());
 app.use(cors());
 
-mongoose.connect('mongodb://mongo:27017/tasks')
+const mongoURI = process.env.MONGO_URI || 'mongodb://mongo:27017/tasks';
+mongoose.connect(mongoURI)
   .then(() => console.log("Connected to MongoDb"))
   .catch(err => console.error("Mongodb connection error", err));
 
@@ -29,7 +30,8 @@ let channel, connection;
 async function connectRabbitMQWithRetry(retries = 5, delay = 3000) {
   while (retries) {
     try {
-      connection = await amqp.connect('amqp://rabbitmq');
+      const rabbitURL = process.env.RABBITMQ_URL || 'amqp://rabbitmq';
+      connection = await amqp.connect(rabbitURL);
       channel = await connection.createChannel();
       await channel.assertQueue('task_created');
       console.log("Connected to RabbitMQ cleanly");

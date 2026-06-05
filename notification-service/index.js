@@ -11,7 +11,8 @@ app.use(bodyParser.json());
 app.use(cors()); 
 
 // Connect to MongoDB
-mongoose.connect('mongodb://mongo:27017/notifications')
+const mongoURI = process.env.MONGO_URI || 'mongodb://mongo:27017/notifications';
+mongoose.connect(mongoURI)
   .then(() => console.log("Notification Service connected to MongoDB"))
   .catch(err => console.error("MongoDB connection error:", err));
 
@@ -46,9 +47,10 @@ app.get('/notifications', async (req, res) => {
 // RabbitMQ Consumer 
 async function startRabbitMQ() {
     try {
-        const connection = await amqp.connect('amqp://rabbitmq');
+
+        const rabbitURL = process.env.RABBITMQ_URL || 'amqp://rabbitmq';
+        const connection = await amqp.connect(rabbitURL);
         const channel = await connection.createChannel();
-        await channel.assertQueue('task_created');
         console.log("Notification service connected to RabbitMQ");
 
         channel.consume('task_created', async (msg) => {

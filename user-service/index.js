@@ -10,7 +10,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Connect to MongoDB (Separate database for users)
-mongoose.connect('mongodb://mongo:27017/users')
+const mongoURI = process.env.MONGO_URI || 'mongodb://mongo:27017/users';
+mongoose.connect(mongoURI)
   .then(() => console.log("User Service connected to MongoDB"))
   .catch(err => console.error("MongoDB connection error:", err));
 
