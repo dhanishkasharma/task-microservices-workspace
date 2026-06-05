@@ -1,0 +1,55 @@
+services:
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+
+  task-service:
+    build: ./task-service
+    container_name: task-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+      - rabbitmq
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+      - rabbitmq
+
+  # 🔥 ADDED: This spins up your frontend layout out of Docker!
+  frontend:
+    build: ./frontend # 👈 Change this to your frontend folder name if it's different (e.g., ./client)
+    container_name: workspace_frontend
+    ports:
+      - "5173:80" # 👈 This lets you visit http://localhost:5173 on your computer
+    depends_on:
+      - user-service
+      - task-service
+      - notification-service
+
+volumes:
+  mongo_data:
