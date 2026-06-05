@@ -8,10 +8,14 @@ const port = 3001;
 
 app.use(bodyParser.json());
 // Replace the current app.use(cors()) with this:
+
+
+// REPLACE your current cors code with this in all 3 server.js files
 app.use(cors({
-  origin: '*', // Allows requests from any origin (e.g., your Vercel app)
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Added OPTIONS here
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // Ensures the preflight (OPTIONS) returns 200 OK
 }));
 
 // Connect to MongoDB (Separate database for users)
